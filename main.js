@@ -5,53 +5,19 @@
 // @description  try to take over the world!
 // @author       You
 // @match        https://www.torn.com/loader.php?sid=racing*
-// @grant        none
 // @run-at       document-idle
+// @require      https://github.com/MiniAlfa/torn-racinvisuals/blob/master/common.js
+// @resource     racingVisualStyle  YOUR_CSS_File.css
+// @grant        GM_addStyle
+// @grant        GM_getResourceText
 // ==/UserScript==
 
 (function() {
     'use strict';
     var svg,lapLength;
 
-    var style =`
-/****************************************/
-/* common styles used for v1 through v4 */
-/****************************************/
-
-#visualcanvas {width:100%}
-#stats        { border: 2px solid black; }
-#controls     { width: 28em; float: left; padding: 1em; font-size: 0.7em; }
-#controls th  { text-align: right; vertical-align: middle; }
-#instructions { clear: left; float: left; width: 17em; padding: 1em; border: 1px solid black; box-shadow: 0 0 5px black; }
-#racer        { position: relative; z-index: 0; width: 50%; height: auto; margin: auto; border: 2px solid black; }
-#canvas       { position: absolute; z-index: 0; width: 640px; height: 480px; z-index: 0; background-color: #72D7EE; }
-#mute         { background-position:   0px 0px; width: 32px; height: 32px; background: url(images/mute.png); display: inline-block; cursor: pointer; position: absolute; margin-left: 20em; }
-#mute.on      { background-position: -32px 0px; }
-
-/**************************************************/
-/* rudimentary heads up display (only used in v4) */
-/**************************************************/
-
-#hud                   { position: absolute; z-index: 1; width: 100%; padding: 5px 0; font-family: Verdana, Geneva, sans-serif; font-size: 0.8em; background-color: rgba(255,0,0,0.4); color: black; border-bottom: 2px solid black; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; }
-#hud .hud              { background-color: rgba(255,255,255,0.6); padding: 5px; border: 1px solid black; margin: 0 5px; transition-property: background-color; transition-duration: 2s; -webkit-transition-property: background-color; -webkit-transition-duration: 2s; }
-#hud #speed            { float: right; }
-#hud #current_lap_time { float: left;  }
-#hud #last_lap_time    { float: left; display: none;  }
-#hud #fast_lap_time    { display: block; width: 12em;  margin: 0 auto; text-align: center; transition-property: background-color; transition-duration: 2s; -webkit-transition-property: background-color; -webkit-transition-duration: 2s; }
-#hud .value            { color: black; font-weight: bold; }
-#hud .fastest          { background-color: rgba(255,215,0,0.5); }
-
-`;
-
-    var styleSheet = document.createElement("style");
-    styleSheet.type = "text/css";
-    styleSheet.innerText = style;
-    document.head.appendChild(styleSheet);
-
-
-    var commonScript = document.createElement("script");
-    commonScript.src = "https://github.com/MiniAlfa/torn-racinvisuals/blob/master/common.js";
-    document.head.appendChild(commonScript);
+    var racingVisualStyle =GM_getResourceText("racingVisualStyle");
+    GM_addStyle(racingVisualStyle);
 
     $('#mainContainer').after('<div id="racer"> <div id="hud"> <span id="speed" class="hud"><span id="speed_value" class="value">0</span> mph</span> <span id="current_lap_time" class="hud">Time: <span id="current_lap_time_value" class="value">0.0</span></span> <span id="last_lap_time" class="hud">Last Lap: <span id="last_lap_time_value" class="value">0.0</span></span> <span id="fast_lap_time" class="hud">Fastest Lap: <span id="fast_lap_time_value" class="value">0.0</span></span> </div> <canvas id="visualcanvas"> Sorry, this example cannot be run because your browser does not support the &lt;canvas&gt; element </canvas> Loading... </div> <audio id="music"> <source src="music/racer.mp3"> </audio> <span id="mute"></span><audio id="sound"> <source src="sound/racer.mp3"> </audio>');
 
@@ -487,12 +453,15 @@
     }
 
     function resetRoad() {
+
         segments = [];
         let difY = svg.getPointAtLength(0.01 * lapLength).y-svg.getPointAtLength(0).y;
         let difX = svg.getPointAtLength(0.01 * lapLength).x-svg.getPointAtLength(0).x;
         prevPhi = Math.atan2(difY,difX);
         phi = 0;
         let maxDirectionDeg = 5;
+        if(!svg) {alert('map could not be created!');return;}
+        //create the track
         for(lapPrecentage=0.001;lapPrecentage<1;lapPrecentage+=0.001){
             let x = svg.getPointAtLength(lapPrecentage * lapLength).x;
             let y = svg.getPointAtLength(lapPrecentage * lapLength).y;
