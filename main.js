@@ -6,8 +6,9 @@
 // @author       You
 // @match        https://www.torn.com/loader.php?sid=racing*
 // @run-at       document-idle
-// @require      https://github.com/MiniAlfa/torn-racinvisuals/blob/master/common.js
-// @resource     racingVisualStyle  YOUR_CSS_File.css
+// @require      https://raw.githubusercontent.com/MiniAlfa/torn-racinvisuals/master/common.js
+// @resource     racingVisualStyle  https://raw.githubusercontent.com/MiniAlfa/torn-racinvisuals/master/racingVisualStyle.css
+// @resource     racingVisualHTML   https://raw.githubusercontent.com/MiniAlfa/torn-racinvisuals/master/racingVisualHTML.html
 // @grant        GM_addStyle
 // @grant        GM_getResourceText
 // ==/UserScript==
@@ -19,7 +20,10 @@
     var racingVisualStyle =GM_getResourceText("racingVisualStyle");
     GM_addStyle(racingVisualStyle);
 
-    $('#mainContainer').after('<div id="racer"> <div id="hud"> <span id="speed" class="hud"><span id="speed_value" class="value">0</span> mph</span> <span id="current_lap_time" class="hud">Time: <span id="current_lap_time_value" class="value">0.0</span></span> <span id="last_lap_time" class="hud">Last Lap: <span id="last_lap_time_value" class="value">0.0</span></span> <span id="fast_lap_time" class="hud">Fastest Lap: <span id="fast_lap_time_value" class="value">0.0</span></span> </div> <canvas id="visualcanvas"> Sorry, this example cannot be run because your browser does not support the &lt;canvas&gt; element </canvas> Loading... </div> <audio id="music"> <source src="music/racer.mp3"> </audio> <span id="mute"></span><audio id="sound"> <source src="sound/racer.mp3"> </audio>');
+    var racingVisualHTML =GM_getResourceText("racingVisualHTML");
+    GM_addStyle(racingVisualHTML);
+
+    $('#mainContainer').after(racingVisualHTML);
 
 
     var fps            = 60;                      // how many 'update' frames per second
