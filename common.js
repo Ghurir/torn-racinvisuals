@@ -276,10 +276,6 @@
                 sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_STRAIGHT : SPRITES.PLAYER_STRAIGHT;
 
             Render.sprite(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY + bounce, -0.5, -1);
-
-            if (playerX<-0.7) Render.sprite(ctx, width, height, resolution, roadWidth, sprites, SPRITES.DRIFT_SMOKE_LEFT, scale, destX-65, destY + bounce -18, -0.5, -1);
-
-            if (playerX>0.7) Render.sprite(ctx, width, height, resolution, roadWidth, sprites, SPRITES.DRIFT_SMOKE_RIGHT, scale, destX+65, destY + bounce -18, -0.5, -1);
         },
 
         //---------------------------------------------------------------------------
