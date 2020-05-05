@@ -148,11 +148,7 @@
                 var name = names[n];
                 result[n] = document.createElement('img');
                 Dom.on(result[n], 'load', onload);
-                //result[n].src = "images/" + name + ".png";
-                if(name == 'background')
-                    result[n].src = 'https://imgur.com/BJktljT.png';
-                else if(name == 'sprites')
-                    result[n].src = 'https://i.imgur.com/atfA5YK.png';
+                result[n].src = "https://github.com/MiniAlfa/torn-racinvisuals/blob/master/images/" + name + ".png";
             }
         },
 
