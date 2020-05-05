@@ -5,7 +5,7 @@
 // @description  try to take over the world!
 // @author       You
 // @match        https://www.torn.com/loader.php?sid=racing*
-// @run-at       document-idle
+// @run-at       document-end
 // @require      https://raw.githubusercontent.com/MiniAlfa/torn-racinvisuals/master/common.js
 // @resource     racingVisualStyle  https://raw.githubusercontent.com/MiniAlfa/torn-racinvisuals/master/racingVisualStyle.css
 // @resource     racingVisualHTML   https://raw.githubusercontent.com/MiniAlfa/torn-racinvisuals/master/racingVisualHTML.html
@@ -21,16 +21,14 @@
     GM_addStyle(racingVisualStyle);
 
     var racingVisualHTML =GM_getResourceText("racingVisualHTML");
-    GM_addStyle(racingVisualHTML);
-
-    $('#mainContainer').after(racingVisualHTML);
+    $('#racingdetails').before(racingVisualHTML);
 
 
     var fps            = 60;                      // how many 'update' frames per second
     var step           = 1/fps;                   // how long is each frame (in seconds)
     var width          = 1024;                    // logical canvas width
     var height         = 768;                     // logical canvas height
-    var centrifugal    = 5;                     // centrifugal force multiplier when going around curves
+    var centrifugal    = 1;                     // centrifugal force multiplier when going around curves
     var skySpeed       = 0.001;                   // background sky layer scroll speed when going around curve (or up hill)
     var hillSpeed      = 0.002;                   // background hill layer scroll speed when going around curve (or up hill)
     var treeSpeed      = 0.003;                   // background tree layer scroll speed when going around curve (or up hill)
@@ -58,7 +56,7 @@
     var fogDensity     = 0;                       // exponential fog density
     var position       = 0;                       // current camera Z position (add playerZ to get player's absolute Z position)
     var speed          = 0;                       // current speed
-    var maxSpeed       = 80000;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
+    var maxSpeed       = 15000;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
     var accel          =  maxSpeed/5;             // acceleration rate - tuned until it 'felt' right
     var totalCars      = 0;                     // total number of cars on the road
     var currentLapTime = 0;                       // current lap time
@@ -73,6 +71,8 @@
         last_lap_time:    { value: null, dom: Dom.get('last_lap_time_value')    },
         fast_lap_time:    { value: null, dom: Dom.get('fast_lap_time_value')    }
     };
+
+    //xrad
     let tempDate = new Date().getTime();
     var smooth = {time:tempDate,direction:'straight'};
 
@@ -83,12 +83,46 @@
     var directionDeg = 0;
     var circle
     var distance = 0;
+    var gameRunning = true;
+
+    if (!document.onvisibilitychange) {
+        document.onvisibilitychange = document.onmozvisibilitychange ||
+        document.onwebkitvisibilitychange ||
+        document.onmsvisibilitychange     ||
+        function(){document.onfocusin; document.onfocusout} ||
+        function (){window.onpageshow ; window.onpagehide ; window.onfocus ; window.onblur ;}
+     }
+
+    document.onvisibilitychange = function(){gameRunning = !document.hidden;position = trackLength * lapPrecentage - 10;console.log(position);}
+
+
+    //loading
+    ctx.fillStyle='white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle='black';
+    ctx.fillText("Loading", canvas.width/2 -20, canvas.height/2 , canvas.width/2);
+    //to remove pizelation from css styling
+    canvas.width = canvas.parentElement.width;
+    canvas.height = canvas.parentElement.height;
+
+    /* This doesn't work need to find something else
+    var orgCanvas = Dom.get('raceCanvas');
+    orgCanvas.width = canvas.width/2;
+    orgCanvas.height = canvas.height/2;
+    var trackImg = document.getElementsByClassName('img-track')[0];
+    trackImg.style.width =canvas.width/3 + 'px';
+    trackImg.style.height= canvas.height/3 + 'px';
+    trackImg.style.zIndex =1;
+    orgCanvas.style.zIndex =2;
+    var orgCtx = orgCanvas.getContext('2d');
+    */
 
     //=========================================================================
     // UPDATE THE GAME WORLD
     //=========================================================================
 
     function update(dt) {
+        if(!gameRunning)return;
 
         var n, car, carW, sprite, spriteW;
         var playerSegment = findSegment(position+playerZ);
@@ -100,7 +134,6 @@
         updateCars(dt, playerSegment, playerW);
 
         position = Util.increase(position, speed *dt , trackLength);
-        debugger;
 
 
         if (keyLeft)
@@ -139,17 +172,17 @@
         // auto steering || keep on track || road limit
         keyRight = keyLeft = false;
         let smoothTimeDif = new Date().getTime() - smooth.time;
-        if(playerX>0.1) {
+        if(playerX>0.4) {
             smooth.time= new Date().getTime();
             smooth.direction="left";
         }
-        else if(playerX<-0.1) {
+        else if(playerX<-0.4) {
             smooth.time = new Date().getTime();
             smooth.direction="right";
         }
 
-        if(smoothTimeDif <= 300 && smooth.direction == "left") {keyLeft = true;}
-        else if (smoothTimeDif <= 300 && smooth.direction == "right"){keyRight = true;}
+        if(smoothTimeDif <= 300 && smooth.direction == "left") keyLeft = true;
+        else if (smoothTimeDif <= 300 && smooth.direction == "right") keyRight = true;
 
 
         playerX = Util.limit(playerX, -1, 1);     // dont ever let it go too far out of bounds
@@ -350,6 +383,18 @@
                               (height/2) - (cameraDepth/playerZ * Util.interpolate(playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent) * height/2),
                               speed * (keyLeft ? -1 : keyRight ? 1 : 0),
                               playerSegment.p2.world.y - playerSegment.p1.world.y);
+
+                if (playerX<-0.7) Render.sprite(ctx, width, height, resolution, roadWidth, sprites, SPRITES.DRIFT_SMOKE_LEFT,
+                              spriteScale,
+                              width/2,
+                              (height/2) - (cameraDepth/playerZ * Util.interpolate(playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent) * height/2),
+                               -0.5, -1);
+
+                if (playerX>0.7) Render.sprite(ctx, width, height, resolution, roadWidth, sprites, SPRITES.DRIFT_SMOKE_RIGHT,
+                              spriteScale,
+                              width/2,
+                              (height/2) - (cameraDepth/playerZ * Util.interpolate(playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent) * height/2),
+                               -0.5, -1);
             }
         }
     }
@@ -631,7 +676,7 @@
         if (ajax.url.includes("sid=raceData") && !svgCreated) {
             let data = JSON.parse(xhr.responseText);
             let path = '<path stroke="blue"'+data.raceData.imagePath.split('<path')[1].split('</path>')+'</path>';
-            let svg = '<div id="t"><svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="520px" height="245px" viewBox="0 0 520 245" enable-background="new 0 0 520 245" xml:space="preserve">'+path+'</svg></div>';
+            let svg = '<div id="t" style="display: none"><svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="520px" height="245px" viewBox="0 0 520 245" enable-background="new 0 0 520 245" xml:space="preserve">'+path+'</svg></div>';
             $('.drivers-list.right').append(svg);
             var realLapLength = trackLengths[data.raceData.title];
             start(realLapLength);
@@ -671,6 +716,7 @@
 
         var precentage = 0.5;
         var time = new Date().getTime();
+        lapPrecentage = prevLapPrecentage = 0;
 
         //on changes
         var target = document.querySelector('.pd-completion')
@@ -678,36 +724,13 @@
         var config = { attributes: true, childList: true, characterData: true };
         observer.observe(target, config);
 
-        lapPrecentage = prevLapPrecentage = 0;
         function refresh() {
             lapPrecentage = (perME.innerText.includes('%'))?(perME.innerText.replace('%','')*1)/100*lapsCount : 0;
-            debugger;
             lapPrecentage = lapPrecentage - parseInt(lapPrecentage);
-            debugger;
-            let dtD = (new Date().getTime() - time)/1000;
-            debugger;
-            direction(dtD);
-            if((lapPrecentage - prevLapPrecentage)) time = new Date().getTime();
-            debugger;
-            circle.setAttribute("cx",svg.getPointAtLength(lapPrecentage * lapLength).x);
-            circle.setAttribute("cy",svg.getPointAtLength(lapPrecentage * lapLength).y );
+            speed = Math.abs(trackLength * lapPrecentage - position);
             prevLapPrecentage = lapPrecentage;
+            debugger;
 
-        }
-
-        function direction(dtD){
-            let x = svg.getPointAtLength(lapPrecentage * lapLength).x;
-            let y = svg.getPointAtLength(lapPrecentage * lapLength).y;
-            let prevX = svg.getPointAtLength(prevLapPrecentage * lapLength).x;
-            let prevY = svg.getPointAtLength(prevLapPrecentage * lapLength).y;
-            let difY = y-prevY;
-            let difX = x-prevX;
-            phi = Math.atan2(difY,difX);
-            distance = Math.sqrt(difX*difX + difY*difY);
-
-            //speed = (trackLength * lapPrecentage - position) / dtD;
-            speed = (trackLength * lapPrecentage - position) ;
-            if (speed<0) speed = 0;
         }
     }
 
