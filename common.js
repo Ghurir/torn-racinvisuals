@@ -243,20 +243,35 @@
 
         //---------------------------------------------------------------------------
 
-        sprite: function(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY, offsetX, offsetY, clipY) {
+        sprite: function(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY, offsetX, offsetY, clipY, optionalName) {
+	  
+	optionalName = (typeof optionalName === 'undefined') ? false : optionalName;
 
-            //  scale for projection AND relative to roadWidth (for tweakUI)
-            var destW  = (sprite.w * scale * width/2) * (SPRITES.SCALE * roadWidth);
-            var destH  = (sprite.h * scale * width/2) * (SPRITES.SCALE * roadWidth);
+    //  scale for projection AND relative to roadWidth (for tweakUI)
+    var destW  = (sprite.w * scale * width/2) * (SPRITES.SCALE * roadWidth);
+    var destH  = (sprite.h * scale * width/2) * (SPRITES.SCALE * roadWidth);
 
-            destX = destX + (destW * (offsetX || 0));
-            destY = destY + (destH * (offsetY || 0));
+    destX = destX + (destW * (offsetX || 0));
+    destY = destY + (destH * (offsetY || 0));
 
-            var clipH = clipY ? Math.max(0, destY+destH-clipY) : 0;
-            if (clipH < destH)
-                ctx.drawImage(sprites, sprite.x, sprite.y, sprite.w, sprite.h - (sprite.h*clipH/destH), destX, destY, destW, destH - clipH);
+    var clipH = clipY ? Math.max(0, destY+destH-clipY) : 0;
+    if (clipH < destH)
+      ctx.drawImage(sprites, sprite.x, sprite.y, sprite.w, sprite.h - (sprite.h*clipH/destH), destX, destY, destW, destH - clipH);
+  
+	if(optionalName){
+		ctx.fillStyle = "white";
+		ctx.beginPath();
+		ctx.moveTo(destX + destW/2, destY);
+		ctx.lineTo(destX, destY-destH/3);
+		ctx.lineTo(destX+destW, destY-destH/3);
+		ctx.fill();
+	
+		ctx.font = destW/optionalName.length+"px Arial";
+        ctx.textAlign = "center";
+		ctx.fillText(optionalName, destX+ destW/2, destY - destH/2);
+	}
 
-        },
+  },
 
         //---------------------------------------------------------------------------
 
