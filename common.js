@@ -148,7 +148,7 @@
                 var name = names[n];
                 result[n] = document.createElement('img');
                 Dom.on(result[n], 'load', onload);
-                result[n].src = "https://github.com/MiniAlfa/torn-racinvisuals/blob/master/images/" + name + ".png";
+                result[n].src = "https://raw.githubusercontent.com/MiniAlfa/torn-racinvisuals/master/images/" + name + ".png";
             }
         },
 
