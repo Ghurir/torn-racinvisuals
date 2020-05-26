@@ -1,2 +1,6 @@
-those are images used in the game.
-I have no copyright over them, and will try to replace them soon.
+sprites.png is generated with the use of creative commons from kenney 
+https://www.kenney.nl/assets/car-kit
+background.pn is a creative common too
+https://raventale.itch.io/parallax-background
+
+mute.png is not and should be replaced soon™
