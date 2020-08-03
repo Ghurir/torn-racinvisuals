@@ -577,7 +577,6 @@
 		  addSCurves();
           */
         }
-        
         lapPrecentage = prevLapPrecentage = 0;
 
         trackLength = segments.length * segmentLength;
@@ -744,10 +743,18 @@
         var observer = new MutationObserver(refresh);
         var config = { attributes: true, childList: true, characterData: true };
         observer.observe(target, config);
+        var playbutton = document.getElementById('play-pause-btn');
 
         function refresh() {
-            lapPrecentage = (perME.innerText.includes('%'))?(perME.innerText.replace('%','')*1)/100*lapsCount :(position == 0)? 0:0.9999999999;
+            var perMEtext =perME.innerText;
+            lapPrecentage = (perMEtext.includes('%'))?(perMEtext.replace('%','')*1)/100*lapsCount :(position == 0)? 0:0.9999999999;
             lapPrecentage -= parseInt(lapPrecentage);
+            if (playbutton.className !== 'pause'){
+                speed = 0;
+                position = trackLength * lapPrecentage;
+                debugger;
+                return;
+            }
 
             speed = trackLength * lapPrecentage - position;
             if (speed<0) speed +=trackLength
